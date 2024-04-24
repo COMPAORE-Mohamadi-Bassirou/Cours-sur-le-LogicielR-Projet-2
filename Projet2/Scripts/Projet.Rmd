@@ -1,0 +1,298 @@
+---
+title: "Projet sur le Logiciel R"
+author: "COMPAORE Mohamadi Bassirou"
+date: '`r Sys.Date()`'
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r}
+rm(list = ls())
+```
+
+```{r Charger la bibliothèque}
+library(dplyr)
+library(readxl)
+library(labelled)
+```
+
+
+```{r cheminaccès}
+getwd() #verification du repertoire de travail
+#setwd(here:here()) #changement du repertoire de travail.
+setwd("C:/Users/user/Desktop/ISEP 3/S2/COURS DE R/Projet2/Input_data") #changement du repertoire de travail.
+chemin_principal <- getwd() #affectation du repertoire de travai à chemin_principal
+chemin_relatif <- file.path(chemin_principal, "Base TP2.xlsx") 
+base_tp2 <- read_excel(chemin_relatif) #importation de la base de données sous forme dataframe.
+#View(base_tp2)
+```
+
+```{r Donner le nombre de lignes et colonnes de la base projet}
+dimension_data <- dim(base_tp2)
+cat("Nombre de lignes (observations) :", dimension_data[1], "\n")
+cat("Nombre de colonnes (variables) :", dimension_data[2], "\n")
+```
+# Labellisation de toutes les variables de la base
+
+```{r Vérification et affichage des valeurs manquantes pour la variable "key"}
+
+# utilise la fonction var_label du package labelled pour labeliser les 30 variables:
+
+labelled::var_label(base_tp2$sexe) <- "Sexe (M/F)" 
+labelled::var_label(base_tp2$region) <- "Région" 
+labelled::var_label(base_tp2$departement) <- "département" 
+labelled::var_label(base_tp2$age) <- "Age" 
+labelled::var_label(base_tp2$sit_mat) <- "Situation maritale" 
+labelled::var_label(base_tp2$si_chef_men) <- "Statut de l'enqueté dans le ménage" 
+labelled::var_label(base_tp2$ethnie) <- "Ethnie" 
+labelled::var_label(base_tp2$occupation) <- "occupation" 
+labelled::var_label(base_tp2$formation) <- "formation" 
+labelled::var_label(base_tp2$niveau_alphabs) <- "Niveau d'alphabétisation" 
+labelled::var_label(base_tp2$types_varietes) <- "Quelles sont les variétés que vous utilisez pour la production de sésame?" 
+labelled::var_label(base_tp2$types_varietes_1) <- "variétés utilisées pour la production de sésame: Traditionnelles" 
+labelled::var_label(base_tp2$types_varietes_2) <- "variétés utilisées pour la production de sésame:Améliorées" 
+labelled::var_label(base_tp2$criteres_var) <- "Quelles sont les critères de choix des variétés de sésame?" 
+labelled::var_label(base_tp2$criteres_var_1) <- "critères de choix: Rendement élevés" 
+labelled::var_label(base_tp2$criteres_var_2) <- "critères de choix: taille des graines" 
+labelled::var_label(base_tp2$criteres_var_3) <- "critères de choix:résistantes aux maladies/ravageurs" 
+labelled::var_label(base_tp2$criteres_var_4) <- "critères de choix: tolérantes aux sécheresse" 
+labelled::var_label(base_tp2$criteres_var_5) <- "critères de choix: tolérantes aux inondations" 
+labelled::var_label(base_tp2$criteres_var_6) <- "critères de choix: faibles charges de travail" 
+labelled::var_label(base_tp2$criteres_var_7) <- "critères de choix: faibles quantités d'intrants" 
+labelled::var_label(base_tp2$criteres_var_8) <- "critères de choix:facile à transformer" 
+labelled::var_label(base_tp2$criteres_var_9) <- "critères de choix:haute teneur en huile" 
+labelled::var_label(base_tp2$criteres_var_10) <- "critères de choix:haut rendement après transformation" 
+labelled::var_label(base_tp2$criteres_var_11) <- "critères de choix:Demande sur le marché" 
+labelled::var_label(base_tp2$criteres_var_12) <- "critères de choix: Bon gout" 
+labelled::var_label(base_tp2$criteres_var_13) <- "critères de choix:Belle couleur" 
+labelled::var_label(base_tp2$criteres_var_14) <- "critères de choix:Haut rendement en fourage" 
+labelled::var_label(base_tp2$criteres_var_15) <- "critères de choix:Qualités du fourage" 
+labelled::var_label(base_tp2$criteres_var_16) <- "critères de choix:autres à préciser" 
+
+```
+
+
+```{r}
+labelled::look_for(base_tp2) #affichage des variables et leurs labbelles 
+
+```
+
+# Recoder les modalites.
+
+```{r}
+(is_numeric_vars <- sapply(base_tp2, is.numeric))
+
+
+```
+
+```{r}
+
+base_tp2$sexe <- recode(base_tp2$sexe, "1" = 0, "2" = 1)
+base_tp2$sit_mat <- recode(base_tp2$sit_mat, "3" = 2,"4" = 3,"5" = 4,"6" = 5)
+base_tp2$ethnie<- recode(base_tp2$ethnie, "77" = 99)
+base_tp2$niveau_alphabs<- recode(base_tp2$niveau_alphabs, "0" = 1,"1" = 2,"2" = 3)
+
+```
+
+```{r}
+unique(base_tp2$sexe)
+unique(base_tp2$sit_mat)
+unique(base_tp2$ethnie)
+unique(base_tp2$niveau_alphabs)
+
+```
+
+
+```{r}
+View(base_tp2)
+
+```
+# Labélisons les modalités de quelques variables à analyser
+```{r}
+base_tp2$sexe <- labelled::labelled(
+                            base_tp2$sexe, c( 'Femme'= 1,
+                                              'Homme'=0))
+
+base_tp2$sit_mat <- labelled::labelled(
+                            base_tp2$sit_mat,c('Marié(e)s'=1,
+                                               'Veuf(ve)'=2,
+                                               'Divorcé(e)'=3,
+                                               'séparé(e)'=4,
+                                               'célibataire'=5))
+                                            
+base_tp2$si_chef_men <- labelled::labelled(
+                            base_tp2$si_chef_men,c('Femme du chef de ménage'=1,
+                                                   'Chef de ménage'=2,
+                                                   'Fils_Fille du chef de ménage'=3,
+                                                   'Autres)'=99))
+
+base_tp2$ethnie <- labelled::labelled(
+                            base_tp2$ethnie,c('Wolof'=1,
+                                              'Pulaar/Toucouleur'=2,
+                                              'Sérère'=3,
+                                              'Mandika/Bambara'=4,
+                                              'Soninké'=5,
+                                              'Diola'=6,
+                                              'Manjack'=7,
+                                              'Bainouk'=8,
+                                              'Maures'=9,
+                                              'Balante'=10,
+                                              'Autres'=99))
+base_tp2$occupation <- labelled::labelled(
+                            base_tp2$occupation,c('Agriculture,Elevage,Sylviculture,Peche'=1,
+                                              'Activité extractives'=2,
+                                              'Activité de fabrication(Artisanat)'=3,
+                                              'Activité de Transformation'=4,
+                                              'Production et distribution électricité et de gaz'=5,
+                                              'Production et distribution eau,assinissement,traitement des dechets et depollution'=6))
+
+base_tp2$formation <- labelled::labelled(
+                            base_tp2$formation,c('Non scolarisé'=1,
+                                              'Elementaire'=2,
+                                              'Moyen'=3,
+                                              'Secondaire'=4,
+                                              'Licence'=5,
+                                              'Master'=6,
+                                              'Doctorat'=7,
+                                              'Ne sais pas'=99)
+                            )
+
+base_tp2$niveau_alphabs <- labelled::labelled(
+                            base_tp2$niveau_alphabs,c('Sans niveau'=1,
+                                              'Sais lire dans une langue'=2,
+                                              'Sais lire et ecrire dans une langue'=3))
+#types_varietes
+
+
+base_tp2$types_varietes_1 <- labelled::labelled(
+                            base_tp2$types_varietes_1,c("Traditionnelles"=1
+                                                        ))
+base_tp2$types_varietes_2 <- labelled::labelled(
+                            base_tp2$types_varietes_2,c("Ameliorés"=1
+                                                        ))
+
+#Criteres var
+
+base_tp2$criteres_var_1 <- labelled::labelled(
+                          base_tp2$criteres_var_1,c('rendement élevés'=1))
+
+base_tp2$criteres_var_2 <- labelled::labelled(
+                          base_tp2$criteres_var_2,c('Taille des graines'=1))
+
+base_tp2$criteres_var_3 <- labelled::labelled(
+                          base_tp2$criteres_var_3,c('Resistantes aux maladies/ravageurs'=1))
+
+base_tp2$criteres_var_4 <- labelled::labelled(
+                          base_tp2$criteres_var_4,c('Tolerantes aux secheresse'=1))
+
+base_tp2$criteres_var_5 <- labelled::labelled(
+                          base_tp2$criteres_var_5,c('Tolerantes aux inondations'=1))
+
+base_tp2$criteres_var_6 <- labelled::labelled(
+                          base_tp2$criteres_var_6,c('Faible charge de travail'=1))
+
+base_tp2$criteres_var_7 <- labelled::labelled(
+                          base_tp2$criteres_var_7,c('Faible quantité intrant'=1))
+
+base_tp2$criteres_var_8 <- labelled::labelled(
+                          base_tp2$criteres_var_8,c('Facile à Transformer'=1))
+
+base_tp2$criteres_var_9 <- labelled::labelled(
+                          base_tp2$criteres_var_9,c('Hauteur teneur en Huile'=1))
+
+base_tp2$criteres_var_10 <- labelled::labelled(
+                          base_tp2$criteres_var_10,c('Haut rendement après transformation'=1))
+                                                                                            
+
+base_tp2$criteres_var_11 <- labelled::labelled(
+                          base_tp2$criteres_var_11,c('Demande sur le marché'=1))
+
+
+base_tp2$criteres_var_12 <- labelled::labelled(
+                          base_tp2$criteres_var_12,c('Bon gout'=1))
+
+base_tp2$criteres_var_13 <- labelled::labelled(
+                          base_tp2$criteres_var_13,c('Belle couleur'=1))
+
+
+base_tp2$criteres_var_14 <- labelled::labelled(
+                          base_tp2$criteres_var_14,c('Haut rendement en Fourage'=1))
+
+
+base_tp2$criteres_var_15 <- labelled::labelled(
+                          base_tp2$criteres_var_15,c( 'Qualtés du Fourages'=1))
+
+
+base_tp2$criteres_var_16 <- labelled::labelled(
+                          base_tp2$criteres_var_16,c( 'autres à Spécifier'=1))
+                                        
+```
+
+
+
+
+# Statistiques descriptives
+
+```{r}
+univarie <- function(base_tp2, column) {
+  distribution <- prop.table(table(base_tp2[[column]])) * 100
+  statistiques_descriptives <- summary(base_tp2[[column]])
+  pie(distribution, main = paste("Répartition selon ", column),
+      col = c("blue", "pink"))
+  return(list(distribution = distribution, statistiques_descriptives = statistiques_descriptives))
+}
+
+univar <- function(base_tp2, column) {
+  distribution <- prop.table(table(base_tp2[[column]])) * 100
+  statistiques_descriptives <- summary(base_tp2[[column]])
+  barplot(distribution, main = paste("Répartition selon", column),
+          xlab = column, ylab = "Proportion", col = c("blue", "pink"))
+  return(list(distribution = distribution, statistiques_descriptives = statistiques_descriptives))
+}
+
+bivarie <- function(base_tp2, column1, column2) {
+  # Calculer la table de contingence croisée entre les deux colonnes
+  cross_tab <- table(base_tp2[[column1]], base_tp2[[column2]]) / nrow(base_tp2) * 100
+  barplot(cross_tab, main = paste("Répartition des PME selon", column1, "et", column2),
+          xlab = column1, ylab = "Proportion", col = c("blue", "pink"))
+  return(cross_tab)
+}
+```
+
+
+```{r}
+univarie(base_tp2, "sexe")
+```
+
+```{r}
+univarie(base_tp2,"sit_mat")
+```
+
+```{r}
+univar(base_tp2,"ethnie")
+
+```
+
+```{r}
+bivarie(base_tp2,"sexe","ethnie")
+bivarie(base_tp2,"sit_mat","ethnie")
+bivarie(base_tp2,"sexe","sit_mat")
+
+```
+
+```{r}
+#rmarkdown::render("C:/Users/user/Desktop/ISEP 3/S2/COURS DE R/Projet2/Scripts/Projet.Rmd", #output_file = "C:/Users/user/Desktop/ISEP 3/S2/COURS DE R/Projet2/Output_data/mon_fichier.pdf")
+```
+
+
+```{r}
+
+```
+
